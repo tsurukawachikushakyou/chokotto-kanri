@@ -49,11 +49,11 @@ export function Navigation() {
       <div className="container flex h-14 items-center">
         <div className="mr-4 hidden md:flex">
           <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-bold sm:inline-block">
-              サポーター管理システム
+            <span className="hidden font-bold md:inline-block"> {/* sm:inline-block から md:inline-block に変更 */}
+              鶴川ちょこっと管理
             </span>
           </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
+          <nav className="flex items-center flex-wrap gap-x-4 text-sm font-medium"> {/* space-x-6 から flex-wrap gap-x-4 に変更 */}
             <NavigationItems />
           </nav>
         </div>
@@ -84,7 +84,7 @@ export function Navigation() {
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <Link href="/" className="flex items-center space-x-2 md:hidden">
-              <span className="font-bold">サポーター管理システム</span>
+              <span className="font-bold">鶴川ちょこっと管理</span>
             </Link>
           </div>
         </div>

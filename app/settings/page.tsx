@@ -47,7 +47,7 @@ export default async function SettingsPage() {
   ])
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">設定</h1>
         <p className="text-muted-foreground">

@@ -85,7 +85,7 @@ export default async function ServiceUserDetailPage(props: PagePropsWithId) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" size="sm" asChild>

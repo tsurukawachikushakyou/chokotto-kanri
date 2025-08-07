@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+// Card, CardContent, CardHeader, CardTitle は削除
 import { Search, X } from 'lucide-react'
 import { useState } from 'react'
 import { updateUrlWithParams } from '@/lib/url-utils'
@@ -71,58 +71,52 @@ export function MatchingFilters({ skills, timeSlots, initialValues }: MatchingFi
   }, {} as Record<string, typeof skills>)
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* スキル選択 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>スキル選択</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
-              <div key={category}>
-                <h4 className="font-medium mb-2">{category}</h4>
-                <div className="grid grid-cols-1 gap-2">
-                  {categorySkills.map((skill) => (
-                    <div key={skill.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`skill-${skill.id}`}
-                        checked={selectedSkills.includes(skill.id)}
-                        onCheckedChange={(checked) => handleSkillChange(skill.id, checked as boolean)}
-                      />
-                      <Label htmlFor={`skill-${skill.id}`} className="text-sm">
-                        {skill.name}
-                      </Label>
-                    </div>
-                  ))}
-                </div>
+    <div className="space-y-6"> {/* この外側のdivは残し、親のgrid gapで調整 */}
+      {/* スキル選択 */}
+      <div> {/* Cardの代わりにdivを使用 */}
+        <h3 className="text-lg font-semibold mb-4">スキル選択</h3> {/* CardTitleの代わりにh3 */}
+        <div className="space-y-4"> {/* CardContentのspace-y-4を維持 */}
+          {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
+            <div key={category}>
+              <h4 className="font-medium mb-2">{category}</h4>
+              <div className="grid grid-cols-1 gap-2">
+                {categorySkills.map((skill) => (
+                  <div key={skill.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`skill-${skill.id}`}
+                      checked={selectedSkills.includes(skill.id)}
+                      onCheckedChange={(checked) => handleSkillChange(skill.id, checked as boolean)}
+                    />
+                    <Label htmlFor={`skill-${skill.id}`} className="text-sm">
+                      {skill.name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 活動可能時間選択 */}
+      <div> {/* Cardの代わりにdivを使用 */}
+        <h3 className="text-lg font-semibold mb-4">活動可能時間選択</h3> {/* CardTitleの代わりにh3 */}
+        <div> {/* CardContentの代わりにdivを使用 */}
+          <div className="grid grid-cols-1 gap-2">
+            {timeSlots.map((timeSlot) => (
+              <div key={timeSlot.id} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`time-slot-${timeSlot.id}`}
+                  checked={selectedTimeSlots.includes(timeSlot.id)}
+                  onCheckedChange={(checked) => handleTimeSlotChange(timeSlot.id, checked as boolean)}
+                />
+                <Label htmlFor={`time-slot-${timeSlot.id}`} className="text-sm">
+                  {timeSlot.display_name}
+                </Label>
               </div>
             ))}
-          </CardContent>
-        </Card>
-
-        {/* 活動可能時間選択 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>活動可能時間選択</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-2">
-              {timeSlots.map((timeSlot) => (
-                <div key={timeSlot.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`time-slot-${timeSlot.id}`}
-                    checked={selectedTimeSlots.includes(timeSlot.id)}
-                    onCheckedChange={(checked) => handleTimeSlotChange(timeSlot.id, checked as boolean)}
-                  />
-                  <Label htmlFor={`time-slot-${timeSlot.id}`} className="text-sm">
-                    {timeSlot.display_name}
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-2">

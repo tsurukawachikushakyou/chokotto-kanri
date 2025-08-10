@@ -1,12 +1,24 @@
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
-import { Edit, ArrowLeft, CheckCircle, Calendar, Clock, User, Users } from 'lucide-react'
-import { formatDateWithWeekday } from '@/lib/utils/date-utils'
+import {
+  Edit,
+  ArrowLeft,
+  CheckCircle,
+  Calendar,
+  Clock,
+  User,
+  Users,
+  Wrench,
+  FileText,
+  Phone,
+  Mail,
+} from 'lucide-react'
+import { formatDateWithWeekday, formatDateTime } from '@/lib/utils/date-utils'
 import type { PagePropsWithId } from '@/lib/types/page-props'
 
 interface ActivityDetail {
@@ -49,14 +61,16 @@ async function getActivity(id: string): Promise<ActivityDetail | null> {
   try {
     const { data, error } = await supabase
       .from('activities')
-      .select(`
+      .select(
+        `
         *,
         supporters(id, name, phone, email),
         service_users(id, name, phone, email),
         skills(name),
         time_slots(display_name),
         activity_statuses(name)
-      `)
+      `,
+      )
       .eq('id', id)
       .single()
 
@@ -69,11 +83,24 @@ async function getActivity(id: string): Promise<ActivityDetail | null> {
 }
 
 const statusColors = {
-  '予定': 'bg-blue-100 text-blue-800',
-  '完了': 'bg-green-100 text-green-800',
-  'キャンセル': 'bg-red-100 text-red-800',
-  '仮予約': 'bg-yellow-100 text-yellow-800',
+  予定: 'bg-blue-100 text-blue-800 border-blue-200',
+  完了: 'bg-green-100 text-green-800 border-green-200',
+  キャンセル: 'bg-red-100 text-red-800 border-red-200',
+  仮予約: 'bg-yellow-100 text-yellow-800 border-yellow-200',
 } as const
+
+// 詳細情報を表示するための補助コンポーネント
+function DetailItem({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start">
+      <div className="flex items-center w-28 text-muted-foreground">
+        <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+        <span className="text-sm font-medium">{label}</span>
+      </div>
+      <div className="flex-1 text-sm">{children}</div>
+    </div>
+  )
+}
 
 export default async function ActivityDetailPage(props: PagePropsWithId) {
   const params = await props.params
@@ -84,28 +111,23 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
           <Button variant="outline" size="sm" asChild>
             <Link href="/activities">
               <ArrowLeft className="mr-2 h-4 w-4" />
               一覧に戻る
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">活動詳細</h1>
-            <p className="text-muted-foreground">
-              {formatDateWithWeekday(activity.activity_date)}の活動
-            </p>
-          </div>
+          <h1 className="text-3xl font-bold tracking-tight mt-2">活動詳細</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
           {activity.activity_statuses.name === '予定' && (
             <Button asChild>
               <Link href={`/activities/${activity.id}/complete`}>
                 <CheckCircle className="mr-2 h-4 w-4" />
-                完了処理
+                活動を完了
               </Link>
             </Button>
           )}
@@ -118,118 +140,125 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* 活動情報 */}
+      <div className="space-y-6">
+        {/* 概要カード */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              活動情報
-            </CardTitle>
+            <CardTitle>概要</CardTitle>
+            <CardDescription>{formatDateWithWeekday(activity.activity_date)}の活動</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <User className="h-8 w-8 text-muted-foreground" />
+                <div>
+                  <div className="text-sm text-muted-foreground">サポーター</div>
+                  <Link href={`/supporters/${activity.supporters.id}`} className="font-semibold text-lg hover:underline">
+                    {activity.supporters.name}
+                  </Link>
+                </div>
+              </div>
+              <ArrowLeft className="h-6 w-6 text-muted-foreground rotate-180 sm:rotate-0" />
+              <div className="flex items-center gap-3">
+                <Users className="h-8 w-8 text-muted-foreground" />
+                <div>
+                  <div className="text-sm text-muted-foreground">利用者</div>
+                  <Link
+                    href={`/service-users/${activity.service_users.id}`}
+                    className="font-semibold text-lg hover:underline"
+                  >
+                    {activity.service_users.name}
+                  </Link>
+                </div>
+              </div>
+            </div>
+            <Separator />
             <div className="flex items-center justify-between">
-              <span className="font-medium">ステータス</span>
+              <span className="text-sm font-medium text-muted-foreground">ステータス</span>
               <Badge className={statusColors[activity.activity_statuses.name as keyof typeof statusColors]}>
                 {activity.activity_statuses.name}
               </Badge>
             </div>
-
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <span>{formatDateWithWeekday(activity.activity_date)}</span>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span>{activity.time_slots.display_name}</span>
-            </div>
-
-            <div>
-              <span className="font-medium">スキル: </span>
-              <span>{activity.skills.name}</span>
-            </div>
-
-            {activity.notes && (
-              <div>
-                <span className="font-medium">備考</span>
-                <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
-                  {activity.notes}
-                </p>
-              </div>
-            )}
-
-            <Separator />
-
-            <div className="text-sm text-muted-foreground">
-              <p>登録日: {formatDateWithWeekday(activity.created_at)}</p>
-              <p>更新日: {formatDateWithWeekday(activity.updated_at)}</p>
-            </div>
           </CardContent>
         </Card>
 
-        {/* 関係者情報 */}
-        <div className="space-y-6">
-          {/* サポーター情報 */}
+        {/* 詳細情報グリッド */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* 左カラム: 活動内容 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                サポーター
-              </CardTitle>
+              <CardTitle>活動内容</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div>
-                <Link 
-                  href={`/supporters/${activity.supporters.id}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {activity.supporters.name}
-                </Link>
-              </div>
-              {activity.supporters.phone && (
-                <p className="text-sm text-muted-foreground">
-                  📞 {activity.supporters.phone}
-                </p>
-              )}
-              {activity.supporters.email && (
-                <p className="text-sm text-muted-foreground">
-                  ✉️ {activity.supporters.email}
-                </p>
+            <CardContent className="space-y-4">
+              <DetailItem icon={Calendar} label="実施日">
+                {formatDateWithWeekday(activity.activity_date)}
+              </DetailItem>
+              <DetailItem icon={Clock} label="時間帯">
+                {activity.time_slots.display_name}
+              </DetailItem>
+              <DetailItem icon={Wrench} label="スキル">
+                {activity.skills.name}
+              </DetailItem>
+              {activity.notes && (
+                <DetailItem icon={FileText} label="備考">
+                  <p className="whitespace-pre-wrap">{activity.notes}</p>
+                </DetailItem>
               )}
             </CardContent>
           </Card>
 
-          {/* 利用者情報 */}
+          {/* 右カラム: 関係者連絡先 */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                利用者
-              </CardTitle>
+              <CardTitle>関係者連絡先</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-6">
               <div>
-                <Link 
-                  href={`/service-users/${activity.service_users.id}`}
-                  className="font-medium text-primary hover:underline"
-                >
-                  {activity.service_users.name}
-                </Link>
+                <h4 className="font-medium mb-3 flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  サポーター
+                </h4>
+                <div className="space-y-3 pl-6">
+                  {activity.supporters.phone && (
+                    <DetailItem icon={Phone} label="電話番号">
+                      {activity.supporters.phone}
+                    </DetailItem>
+                  )}
+                  {activity.supporters.email && (
+                    <DetailItem icon={Mail} label="メール">
+                      {activity.supporters.email}
+                    </DetailItem>
+                  )}
+                </div>
               </div>
-              {activity.service_users.phone && (
-                <p className="text-sm text-muted-foreground">
-                  📞 {activity.service_users.phone}
-                </p>
-              )}
-              {activity.service_users.email && (
-                <p className="text-sm text-muted-foreground">
-                  ✉️ {activity.service_users.email}
-                </p>
-              )}
+              <Separator />
+              <div>
+                <h4 className="font-medium mb-3 flex items-center">
+                  <Users className="mr-2 h-4 w-4" />
+                  利用者
+                </h4>
+                <div className="space-y-3 pl-6">
+                  {activity.service_users.phone && (
+                    <DetailItem icon={Phone} label="電話番号">
+                      {activity.service_users.phone}
+                    </DetailItem>
+                  )}
+                  {activity.service_users.email && (
+                    <DetailItem icon={Mail} label="メール">
+                      {activity.service_users.email}
+                    </DetailItem>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
+        <Card className="text-xs text-muted-foreground">
+          <CardContent className="p-3 flex flex-wrap justify-between gap-x-4 gap-y-1">
+            <span>登録日: {formatDateTime(activity.created_at)}</span>
+            <span>更新日: {formatDateTime(activity.updated_at)}</span>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

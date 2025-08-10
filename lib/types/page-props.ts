@@ -23,27 +23,29 @@ export interface SearchParams {
   date_to?: string
   skills?: string
   time_slots?: string
+  view?: string
+  month?: string // ★ 追加
 }
 
 // 型安全なsearchParamsの解析関数
-export function parseSearchParams(
-  searchParams: Record<string, string | string[] | undefined>
-): SearchParams {
+export function parseSearchParams(searchParams: Record<string, string | string[] | undefined>): SearchParams {
   const getString = (key: string): string | undefined => {
     const value = searchParams[key]
-    return typeof value === 'string' ? value : undefined
+    return typeof value === "string" ? value : undefined
   }
 
   return {
-    search: getString('search'),
-    status: getString('status'),
-    area: getString('area'),
-    skill: getString('skill'),
-    supporter: getString('supporter'),
-    service_user: getString('service_user'),
-    date_from: getString('date_from'),
-    date_to: getString('date_to'),
-    skills: getString('skills'),
-    time_slots: getString('time_slots'),
+    search: getString("search"),
+    status: getString("status"),
+    area: getString("area"),
+    skill: getString("skill"),
+    supporter: getString("supporter"),
+    service_user: getString("service_user"),
+    date_from: getString("date_from"),
+    date_to: getString("date_to"),
+    skills: getString("skills"),
+    time_slots: getString("time_slots"),
+    view: getString("view"),
+    month: getString("month"), // ★ 追加
   }
 }

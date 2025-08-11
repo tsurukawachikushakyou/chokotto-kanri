@@ -202,7 +202,7 @@ export function SkillsManagement({ initialSkills }: SkillsManagementProps) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>スキル名</TableHead>
+            <TableHead>サポート名</TableHead>
             <TableHead>カテゴリ</TableHead>
             <TableHead>ステータス</TableHead>
             <TableHead className="w-[100px]">操作</TableHead>

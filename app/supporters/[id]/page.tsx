@@ -193,11 +193,11 @@ export default async function SupporterDetailPage(props: PagePropsWithId) {
           {/* スキル */}
           <Card>
             <CardHeader>
-              <CardTitle>登録スキル</CardTitle>
+              <CardTitle>できること</CardTitle>
             </CardHeader>
             <CardContent>
               {supporter.supporter_skills.length === 0 ? (
-                <p className="text-muted-foreground">スキルが登録されていません</p>
+                <p className="text-muted-foreground">できることが登録されていません</p>
               ) : (
                 <div className="flex flex-wrap gap-2">
                   {supporter.supporter_skills.map((ss) => (

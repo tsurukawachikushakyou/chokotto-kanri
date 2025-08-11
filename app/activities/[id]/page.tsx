@@ -196,7 +196,7 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
               <DetailItem icon={Clock} label="時間帯">
                 {activity.time_slots.display_name}
               </DetailItem>
-              <DetailItem icon={Wrench} label="スキル">
+              <DetailItem icon={Wrench} label="サポート">
                 {activity.skills.name}
               </DetailItem>
               {activity.notes && (

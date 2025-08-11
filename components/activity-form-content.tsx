@@ -242,13 +242,13 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
           </div>
 
           <div>
-            <Label htmlFor="skill_id">スキル *</Label>
+            <Label htmlFor="skill_id">サポート内容 *</Label>
             <Select
               value={watch('skill_id')}
               onValueChange={(value) => setValue('skill_id', value)}
             >
               <SelectTrigger>
-                <SelectValue placeholder="スキルを選択してください" />
+                <SelectValue placeholder="サポート内容を選択してください" />
               </SelectTrigger>
               <SelectContent>
                 {skills.map((skill) => (

@@ -108,7 +108,7 @@ export function ActivityCompleteForm({ activity }: ActivityCompleteFormProps) {
               <span className="ml-2">{activity.service_users.name}</span>
             </div>
             <div className="col-span-2">
-              <span className="font-medium">スキル:</span>
+              <span className="font-medium">サポート内容:</span>
               <span className="ml-2">{activity.skills.name}</span>
             </div>
           </div>

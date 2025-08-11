@@ -144,7 +144,7 @@ export default async function MatchingPage(props: BasePageProps) {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">マッチング検索</h1>
         <p className="text-muted-foreground">
-          スキルと活動可能時間でサポーターを検索できます
+          サポート内容と活動可能時間でサポーターを検索できます
         </p>
       </div>
 
@@ -168,7 +168,7 @@ export default async function MatchingPage(props: BasePageProps) {
 
           {!hasFilters ? (
             <div className="text-center py-12">
-              <p className="text-muted-foreground">スキルまたは活動可能時間を選択して検索してください</p>
+              <p className="text-muted-foreground">できることまたは活動可能時間を選択して検索してください</p>
             </div>
           ) : supporters.length === 0 ? (
             <div className="text-center py-12">
@@ -217,7 +217,7 @@ export default async function MatchingPage(props: BasePageProps) {
 
                     {/* スキル */}
                     <div>
-                      <h4 className="text-sm font-medium mb-1">スキル</h4> {/* mb-2からmb-1に変更 */}
+                      <h4 className="text-sm font-medium mb-1">できること</h4> {/* mb-2からmb-1に変更 */}
                       <div className="flex flex-wrap gap-1">
                         {supporter.supporter_skills.slice(0, 3).map((ss) => (
                           <Badge key={ss.skills.id} variant="secondary" className="text-xs">

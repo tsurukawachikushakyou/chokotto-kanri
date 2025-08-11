@@ -94,7 +94,7 @@ export function SupporterFilters({ areas, skills, initialValues }: SupporterFilt
         </div>
 
         <div>
-          <label className="text-sm font-medium mb-2 block">スキル</label>
+          <label className="text-sm font-medium mb-2 block">できること</label>
           <Select value={skill} onValueChange={setSkill}>
             <SelectTrigger>
               <SelectValue placeholder="すべて" />

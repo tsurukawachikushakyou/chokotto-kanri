@@ -74,7 +74,7 @@ export function MatchingFilters({ skills, timeSlots, initialValues }: MatchingFi
     <div className="space-y-6"> {/* この外側のdivは残し、親のgrid gapで調整 */}
       {/* スキル選択 */}
       <div> {/* Cardの代わりにdivを使用 */}
-        <h3 className="text-lg font-semibold mb-4">スキル選択</h3> {/* CardTitleの代わりにh3 */}
+        <h3 className="text-lg font-semibold mb-4">サポート内容選択</h3> {/* CardTitleの代わりにh3 */}
         <div className="space-y-4"> {/* CardContentのspace-y-4を維持 */}
           {Object.entries(skillsByCategory).map(([category, categorySkills]) => (
             <div key={category}>

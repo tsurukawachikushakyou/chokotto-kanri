@@ -57,14 +57,14 @@ export default async function SettingsPage() {
 
       <Tabs defaultValue="skills" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="skills">スキル管理</TabsTrigger>
+          <TabsTrigger value="skills">サポート内容管理</TabsTrigger>
           <TabsTrigger value="statuses">活動ステータス管理</TabsTrigger>
         </TabsList>
 
         <TabsContent value="skills">
           <Card>
             <CardHeader>
-              <CardTitle>スキル管理</CardTitle>
+              <CardTitle>サポート内容の管理</CardTitle>
             </CardHeader>
             <CardContent>
               <SkillsManagement initialSkills={skills} />

@@ -68,7 +68,7 @@ async function getActivities(searchParams: ActivityFiltersType): Promise<Activit
 
     return filteredData
   } catch (error) {
-    console.error("活動履歴一覧の取得に失敗しました:", error)
+    console.error("活動記録一覧の取得に失敗しました:", error)
     return []
   }
 }
@@ -141,8 +141,8 @@ export default async function ActivitiesPage(props: BasePageProps) {
     <div className={containerClass}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">活動履歴一覧</h1>
-          <p className="text-muted-foreground">すべての活動履歴を管理できます</p>
+          <h1 className="text-3xl font-bold tracking-tight">活動記録一覧</h1>
+          <p className="text-muted-foreground">すべての活動記録を管理できます</p>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
           <Button asChild>

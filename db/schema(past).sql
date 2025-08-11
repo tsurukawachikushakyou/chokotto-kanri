@@ -67,7 +67,6 @@ CREATE TABLE activities (
     time_slot_id UUID NOT NULL REFERENCES time_slots(id) ON DELETE RESTRICT,
     status_id UUID NOT NULL REFERENCES activity_statuses(id) ON DELETE RESTRICT,
     notes TEXT,
-    arbitrary_time_notes TEXT, -- 新しいカラムを追加
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

@@ -1,18 +1,18 @@
-'use client'
+"use client"
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { activitySchema, type ActivityFormData } from '@/lib/validations'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'sonner'
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { activitySchema, type ActivityFormData } from "@/lib/validations"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
 
 interface ActivityFormContentProps {
   initialData?: {
@@ -24,6 +24,7 @@ interface ActivityFormContentProps {
     time_slot_id: string
     status_id: string
     notes: string | null
+    arbitrary_time_notes: string | null // 追加
     supporters: { name: string }
     service_users: { name: string }
     skills: { name: string }
@@ -76,15 +77,18 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
     formState: { errors },
   } = useForm<ActivityFormData>({
     resolver: zodResolver(activitySchema),
-    defaultValues: initialData ? {
-      supporter_id: initialData.supporter_id,
-      service_user_id: initialData.service_user_id,
-      skill_id: initialData.skill_id,
-      activity_date: initialData.activity_date,
-      time_slot_id: initialData.time_slot_id,
-      status_id: initialData.status_id,
-      notes: initialData.notes || '',
-    } : {}
+    defaultValues: initialData
+      ? {
+          supporter_id: initialData.supporter_id,
+          service_user_id: initialData.service_user_id,
+          skill_id: initialData.skill_id,
+          activity_date: initialData.activity_date,
+          time_slot_id: initialData.time_slot_id,
+          status_id: initialData.status_id,
+          notes: initialData.notes || "",
+          arbitrary_time_notes: initialData.arbitrary_time_notes || "", // 追加
+        }
+      : {},
   })
 
   useEffect(() => {
@@ -92,26 +96,22 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
       const supabase = createClient()
 
       try {
-        const [
-          supportersResult,
-          serviceUsersResult,
-          skillsResult,
-          timeSlotsResult,
-          statusesResult
-        ] = await Promise.all([
-          supabase.from('supporters').select('id, name, status').order('name'),
-          supabase.from('service_users').select('id, name').order('name'),
-          supabase.from('skills').select('id, name').eq('is_active', true).order('name'),
-          supabase.from('time_slots').select('id, display_name').order('day_of_week'),
-          supabase.from('activity_statuses').select('id, name').order('name')
-        ])
+        const [supportersResult, serviceUsersResult, skillsResult, timeSlotsResult, statusesResult] = await Promise.all(
+          [
+            supabase.from("supporters").select("id, name, status").order("name"),
+            supabase.from("service_users").select("id, name").order("name"),
+            supabase.from("skills").select("id, name").eq("is_active", true).order("name"),
+            supabase.from("time_slots").select("id, display_name").order("day_of_week"),
+            supabase.from("activity_statuses").select("id, name").order("name"),
+          ],
+        )
 
         if (supportersResult.data) {
           // 型安全な処理: status が null の場合は 'N/A' に変換
           const supportersWithStatus = supportersResult.data.map((supporter) => ({
             id: supporter.id,
             name: supporter.name,
-            status: supporter.status || 'N/A'
+            status: supporter.status || "N/A",
           }))
           setSupporters(supportersWithStatus)
         }
@@ -121,13 +121,13 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
         if (statusesResult.data) setStatuses(statusesResult.data as StatusOption[])
 
         // URLパラメータからサポーターIDを取得して設定
-        const supporterId = searchParams.get('supporter')
+        const supporterId = searchParams.get("supporter")
         if (supporterId) {
-          setValue('supporter_id', supporterId)
+          setValue("supporter_id", supporterId)
         }
       } catch (error) {
-        console.error('データの取得に失敗しました:', error)
-        toast.error('データの取得に失敗しました')
+        console.error("データの取得に失敗しました:", error)
+        toast.error("データの取得に失敗しました")
       }
     }
 
@@ -142,7 +142,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
       if (initialData) {
         // 更新処理
         const { error } = await supabase
-          .from('activities')
+          .from("activities")
           .update({
             supporter_id: data.supporter_id,
             service_user_id: data.service_user_id,
@@ -151,35 +151,35 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
             time_slot_id: data.time_slot_id,
             status_id: data.status_id,
             notes: data.notes || null,
+            arbitrary_time_notes: data.arbitrary_time_notes || null, // 追加
           })
-          .eq('id', initialData.id)
+          .eq("id", initialData.id)
 
         if (error) throw error
 
-        toast.success('活動情報を更新しました')
+        toast.success("活動情報を更新しました")
         router.push(`/activities/${initialData.id}`)
       } else {
         // 新規作成処理
-        const { error } = await supabase
-          .from('activities')
-          .insert({
-            supporter_id: data.supporter_id,
-            service_user_id: data.service_user_id,
-            skill_id: data.skill_id,
-            activity_date: data.activity_date,
-            time_slot_id: data.time_slot_id,
-            status_id: data.status_id,
-            notes: data.notes || null,
-          })
+        const { error } = await supabase.from("activities").insert({
+          supporter_id: data.supporter_id,
+          service_user_id: data.service_user_id,
+          skill_id: data.skill_id,
+          activity_date: data.activity_date,
+          time_slot_id: data.time_slot_id,
+          status_id: data.status_id,
+          notes: data.notes || null,
+          arbitrary_time_notes: data.arbitrary_time_notes || null, // 追加
+        })
 
         if (error) throw error
 
-        toast.success('活動を登録しました')
-        router.push('/activities')
+        toast.success("活動を登録しました")
+        router.push("/activities")
       }
     } catch (error) {
-      console.error('保存に失敗しました:', error)
-      toast.error('保存に失敗しました')
+      console.error("保存に失敗しました:", error)
+      toast.error("保存に失敗しました")
     } finally {
       setIsLoading(false)
     }
@@ -194,10 +194,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="supporter_id">サポーター * ({supporters.length}件)</Label>
-            <Select
-              value={watch('supporter_id')}
-              onValueChange={(value) => setValue('supporter_id', value)}
-            >
+            <Select value={watch("supporter_id")} onValueChange={(value) => setValue("supporter_id", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="サポーターを選択してください" />
               </SelectTrigger>
@@ -209,9 +206,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
                 ))}
               </SelectContent>
             </Select>
-            {errors.supporter_id && (
-              <p className="text-sm text-red-600 mt-1">{errors.supporter_id.message}</p>
-            )}
+            {errors.supporter_id && <p className="text-sm text-red-600 mt-1">{errors.supporter_id.message}</p>}
             {supporters.length === 0 && (
               <p className="text-sm text-amber-600 mt-1">
                 サポーターが登録されていません。先にサポーターを登録してください。
@@ -221,10 +216,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
 
           <div>
             <Label htmlFor="service_user_id">利用者 * ({serviceUsers.length}件)</Label>
-            <Select
-              value={watch('service_user_id')}
-              onValueChange={(value) => setValue('service_user_id', value)}
-            >
+            <Select value={watch("service_user_id")} onValueChange={(value) => setValue("service_user_id", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="利用者を選択してください" />
               </SelectTrigger>
@@ -236,17 +228,12 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
                 ))}
               </SelectContent>
             </Select>
-            {errors.service_user_id && (
-              <p className="text-sm text-red-600 mt-1">{errors.service_user_id.message}</p>
-            )}
+            {errors.service_user_id && <p className="text-sm text-red-600 mt-1">{errors.service_user_id.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="skill_id">サポート内容 *</Label>
-            <Select
-              value={watch('skill_id')}
-              onValueChange={(value) => setValue('skill_id', value)}
-            >
+            <Select value={watch("skill_id")} onValueChange={(value) => setValue("skill_id", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="サポート内容を選択してください" />
               </SelectTrigger>
@@ -258,29 +245,18 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
                 ))}
               </SelectContent>
             </Select>
-            {errors.skill_id && (
-              <p className="text-sm text-red-600 mt-1">{errors.skill_id.message}</p>
-            )}
+            {errors.skill_id && <p className="text-sm text-red-600 mt-1">{errors.skill_id.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="activity_date">活動日 *</Label>
-            <Input
-              id="activity_date"
-              type="date"
-              {...register('activity_date')}
-            />
-            {errors.activity_date && (
-              <p className="text-sm text-red-600 mt-1">{errors.activity_date.message}</p>
-            )}
+            <Input id="activity_date" type="date" {...register("activity_date")} />
+            {errors.activity_date && <p className="text-sm text-red-600 mt-1">{errors.activity_date.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="time_slot_id">時間帯 *</Label>
-            <Select
-              value={watch('time_slot_id')}
-              onValueChange={(value) => setValue('time_slot_id', value)}
-            >
+            <Select value={watch("time_slot_id")} onValueChange={(value) => setValue("time_slot_id", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="時間帯を選択してください" />
               </SelectTrigger>
@@ -292,17 +268,24 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
                 ))}
               </SelectContent>
             </Select>
-            {errors.time_slot_id && (
-              <p className="text-sm text-red-600 mt-1">{errors.time_slot_id.message}</p>
+            {errors.time_slot_id && <p className="text-sm text-red-600 mt-1">{errors.time_slot_id.message}</p>}
+          </div>
+
+          <div>
+            <Label htmlFor="arbitrary_time_notes">任意の時間 (例: 14:30開始)</Label> {/* 追加 */}
+            <Input
+              id="arbitrary_time_notes"
+              {...register("arbitrary_time_notes")}
+              placeholder="例: 14:30開始、午前中、夕方"
+            />
+            {errors.arbitrary_time_notes && (
+              <p className="text-sm text-red-600 mt-1">{errors.arbitrary_time_notes.message}</p>
             )}
           </div>
 
           <div>
             <Label htmlFor="status_id">ステータス *</Label>
-            <Select
-              value={watch('status_id')}
-              onValueChange={(value) => setValue('status_id', value)}
-            >
+            <Select value={watch("status_id")} onValueChange={(value) => setValue("status_id", value)}>
               <SelectTrigger>
                 <SelectValue placeholder="ステータスを選択してください" />
               </SelectTrigger>
@@ -314,35 +297,27 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
                 ))}
               </SelectContent>
             </Select>
-            {errors.status_id && (
-              <p className="text-sm text-red-600 mt-1">{errors.status_id.message}</p>
-            )}
+            {errors.status_id && <p className="text-sm text-red-600 mt-1">{errors.status_id.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="notes">備考</Label>
             <Textarea
               id="notes"
-              {...register('notes')}
+              {...register("notes")}
               placeholder="活動に関する備考があれば記入してください"
               rows={3}
             />
-            {errors.notes && (
-              <p className="text-sm text-red-600 mt-1">{errors.notes.message}</p>
-            )}
+            {errors.notes && <p className="text-sm text-red-600 mt-1">{errors.notes.message}</p>}
           </div>
         </CardContent>
       </Card>
 
       <div className="flex gap-4">
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? '保存中...' : initialData ? '更新' : '登録'}
+          {isLoading ? "保存中..." : initialData ? "更新" : "登録"}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-        >
+        <Button type="button" variant="outline" onClick={() => router.back()}>
           キャンセル
         </Button>
       </div>

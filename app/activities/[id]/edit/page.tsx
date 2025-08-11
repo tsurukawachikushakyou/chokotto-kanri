@@ -7,6 +7,7 @@ interface ActivityForEdit {
   id: string
   activity_date: string
   notes: string | null
+  arbitrary_time_notes: string | null // ★ この行を追加
   supporter_id: string
   service_user_id: string
   skill_id: string
@@ -49,6 +50,7 @@ async function getActivity(id: string): Promise<ActivityForEdit | null> {
       .single()
 
     if (error) throw error
+    // 型アサーションは、取得したデータがこの形状であることをTypeScriptに伝える
     return data as ActivityForEdit
   } catch (error) {
     console.error('活動情報の取得に失敗しました:', error)

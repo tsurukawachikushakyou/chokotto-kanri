@@ -1,21 +1,21 @@
-'use client'
+"use client"
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { toast } from 'sonner'
-import { format } from 'date-fns'
-import { ja } from 'date-fns/locale'
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { createClient } from "@/lib/supabase/client"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { toast } from "sonner"
+import { format } from "date-fns"
+import { ja } from "date-fns/locale"
 
 const completeSchema = z.object({
-  completion_notes: z.string().min(1, '活動報告は必須です'),
+  completion_notes: z.string().min(1, "活動報告は必須です"),
 })
 
 type CompleteFormData = z.infer<typeof completeSchema>
@@ -25,6 +25,7 @@ interface ActivityCompleteFormProps {
     id: string
     activity_date: string
     notes: string | null
+    arbitrary_time_notes: string | null // 追加
     supporters: { name: string }
     service_users: { name: string }
     skills: { name: string }
@@ -51,33 +52,33 @@ export function ActivityCompleteForm({ activity }: ActivityCompleteFormProps) {
     try {
       // 完了ステータスのIDを取得
       const { data: completedStatus, error: statusError } = await supabase
-        .from('activity_statuses')
-        .select('id')
-        .eq('name', '完了')
+        .from("activity_statuses")
+        .select("id")
+        .eq("name", "完了")
         .single()
 
       if (statusError) throw statusError
 
       // 活動を完了状態に更新
-      const updatedNotes = activity.notes 
+      const updatedNotes = activity.notes
         ? `${activity.notes}\n\n【活動報告】\n${data.completion_notes}`
         : `【活動報告】\n${data.completion_notes}`
 
       const { error: updateError } = await supabase
-        .from('activities')
+        .from("activities")
         .update({
           status_id: completedStatus.id,
           notes: updatedNotes,
         })
-        .eq('id', activity.id)
+        .eq("id", activity.id)
 
       if (updateError) throw updateError
 
-      toast.success('活動を完了しました')
+      toast.success("活動を完了しました")
       router.push(`/activities/${activity.id}`)
     } catch (error) {
-      console.error('完了処理に失敗しました:', error)
-      toast.error('完了処理に失敗しました')
+      console.error("完了処理に失敗しました:", error)
+      toast.error("完了処理に失敗しました")
     } finally {
       setIsLoading(false)
     }
@@ -93,12 +94,20 @@ export function ActivityCompleteForm({ activity }: ActivityCompleteFormProps) {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium">活動日:</span>
-              <span className="ml-2">{format(new Date(activity.activity_date), 'yyyy年M月d日(E)', { locale: ja })}</span>
+              <span className="ml-2">
+                {format(new Date(activity.activity_date), "yyyy年M月d日(E)", { locale: ja })}
+              </span>
             </div>
             <div>
               <span className="font-medium">時間帯:</span>
               <span className="ml-2">{activity.time_slots.display_name}</span>
             </div>
+            {activity.arbitrary_time_notes && ( // 追加
+              <div className="col-span-2">
+                <span className="font-medium">任意の時間:</span>
+                <span className="ml-2">{activity.arbitrary_time_notes}</span>
+              </div>
+            )}
             <div>
               <span className="font-medium">サポーター:</span>
               <span className="ml-2">{activity.supporters.name}</span>
@@ -112,13 +121,11 @@ export function ActivityCompleteForm({ activity }: ActivityCompleteFormProps) {
               <span className="ml-2">{activity.skills.name}</span>
             </div>
           </div>
-          
+
           {activity.notes && (
             <div className="mt-4">
               <span className="font-medium">事前備考:</span>
-              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">
-                {activity.notes}
-              </p>
+              <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{activity.notes}</p>
             </div>
           )}
         </CardContent>
@@ -133,27 +140,21 @@ export function ActivityCompleteForm({ activity }: ActivityCompleteFormProps) {
             <Label htmlFor="completion_notes">活動報告 *</Label>
             <Textarea
               id="completion_notes"
-              {...register('completion_notes')}
+              {...register("completion_notes")}
               placeholder="活動の内容、結果、特記事項などを詳しく記入してください"
               rows={6}
               className="mt-2"
             />
-            {errors.completion_notes && (
-              <p className="text-sm text-red-600 mt-1">{errors.completion_notes.message}</p>
-            )}
+            {errors.completion_notes && <p className="text-sm text-red-600 mt-1">{errors.completion_notes.message}</p>}
           </div>
         </CardContent>
       </Card>
 
       <div className="flex gap-4">
         <Button type="submit" disabled={isLoading}>
-          {isLoading ? '完了処理中...' : '活動を完了する'}
+          {isLoading ? "完了処理中..." : "活動を完了する"}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-        >
+        <Button type="button" variant="outline" onClick={() => router.back()}>
           キャンセル
         </Button>
       </div>

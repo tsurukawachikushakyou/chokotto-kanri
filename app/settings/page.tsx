@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SkillsManagement } from '@/components/skills-management'
 import { ActivityStatusesManagement } from '@/components/activity-statuses-management'
@@ -47,16 +47,17 @@ export default async function SettingsPage() {
   ])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+      {/* ページヘッダー */}
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">設定</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">設定</h1>
         <p className="text-muted-foreground">
-          システムのマスタデータを管理できます
+          アプリケーションの基本的な設定を管理します
         </p>
       </div>
 
       <Tabs defaultValue="skills" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="skills">サポート内容管理</TabsTrigger>
           <TabsTrigger value="statuses">活動ステータス管理</TabsTrigger>
         </TabsList>
@@ -65,6 +66,9 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>サポート内容の管理</CardTitle>
+              <CardDescription>
+                サポーターが提供できる「スキル」の種類を管理します。ここで登録した内容が、活動登録時の選択肢になります。
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <SkillsManagement initialSkills={skills} />
@@ -76,6 +80,9 @@ export default async function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>活動ステータス管理</CardTitle>
+              <CardDescription>
+                活動の進捗状況を示す「ステータス」を管理します。「予定」「完了」「キャンセル」などがこれにあたります。
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <ActivityStatusesManagement initialStatuses={activityStatuses} />

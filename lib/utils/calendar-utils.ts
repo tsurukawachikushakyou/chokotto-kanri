@@ -7,8 +7,10 @@ import {
   endOfWeek,
   eachDayOfInterval,
   format,
+  // ★ 修正点: isSaturday と isSunday のインポートを削除
 } from "date-fns"
 import { ja } from "date-fns/locale"
+import holiday_jp from "@holiday-jp/holiday_jp"
 
 /**
  * 指定された月のカレンダーグリッドを構成する日付の配列を返します。
@@ -39,6 +41,15 @@ export function getPreviousMonth(date: Date): Date {
  */
 export function getNextMonth(date: Date): Date {
   return addMonths(date, 1)
+}
+
+/**
+ * 指定された日付が日本の祝日かどうかを判定します。
+ * @param date - 判定するDateオブジェクト
+ * @returns 祝日であればtrue、そうでなければfalse
+ */
+export function isHoliday(date: Date): boolean {
+  return holiday_jp.isHoliday(date)
 }
 
 /**

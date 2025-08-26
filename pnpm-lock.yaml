@@ -101,9 +101,6 @@ importers:
       '@supabase/supabase-js':
         specifier: latest
         version: 2.53.0
-      autoprefixer:
-        specifier: ^10.4.20
-        version: 10.4.21(postcss@8.5.6)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -183,6 +180,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.1.7(@types/react@19.1.9)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.21(postcss@8.5.6)
       eslint:
         specifier: ^9.32.0
         version: 9.32.0(jiti@1.21.7)

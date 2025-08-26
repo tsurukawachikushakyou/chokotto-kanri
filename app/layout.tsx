@@ -20,9 +20,9 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
+        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-black">
           <Navigation />
-          <main className="py-8">
+          <main className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8">
             {children}
           </main>
         </div>

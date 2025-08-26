@@ -47,6 +47,14 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        supporter: {
+          DEFAULT: 'hsl(var(--supporter))',
+          foreground: 'hsl(var(--supporter-foreground))',
+        },
+        user: {
+          DEFAULT: 'hsl(var(--user))',
+          foreground: 'hsl(var(--user-foreground))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

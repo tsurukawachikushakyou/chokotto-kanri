@@ -11,28 +11,32 @@ import { updateUrlWithParams } from '@/lib/url-utils'
 interface SupporterFiltersProps {
   areas: string[]
   skills: string[]
+  timeSlots?: Array<{ id: string; display_name: string }>
   initialValues: {
     search?: string
     status?: string
     area?: string
     skill?: string
+    time_slot?: string
   }
 }
 
-export function SupporterFilters({ areas, skills, initialValues }: SupporterFiltersProps) {
+export function SupporterFilters({ areas, skills, timeSlots, initialValues }: SupporterFiltersProps) {
   const router = useRouter()
   
   const [search, setSearch] = useState(initialValues.search || '')
   const [status, setStatus] = useState(initialValues.status || 'all')
   const [area, setArea] = useState(initialValues.area || 'all')
   const [skill, setSkill] = useState(initialValues.skill || 'all')
+  const [timeSlot, setTimeSlot] = useState(initialValues.time_slot || 'all')
 
   const updateFilters = () => {
     const url = updateUrlWithParams('/supporters', {
-      search: search.trim(),
+      search: search.trim() || undefined,
       status: status !== 'all' ? status : undefined,
       area: area !== 'all' ? area : undefined,
       skill: skill !== 'all' ? skill : undefined,
+      time_slot: timeSlot !== 'all' ? timeSlot : undefined,
     })
     router.push(url)
   }
@@ -42,14 +46,15 @@ export function SupporterFilters({ areas, skills, initialValues }: SupporterFilt
     setStatus('all')
     setArea('all')
     setSkill('all')
+    setTimeSlot('all')
     router.push('/supporters')
   }
 
-  const hasFilters = search.trim() || (status && status !== 'all') || (area && area !== 'all') || (skill && skill !== 'all')
+  const hasFilters = search.trim() || (status && status !== 'all') || (area && area !== 'all') || (skill && skill !== 'all') || (timeSlot && timeSlot !== 'all')
 
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg border">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <label className="text-sm font-medium mb-2 block">名前検索</label>
           <Input
@@ -109,6 +114,27 @@ export function SupporterFilters({ areas, skills, initialValues }: SupporterFilt
             </SelectContent>
           </Select>
         </div>
+
+        {timeSlots && timeSlots.length > 0 && (
+          <div>
+            <label className="text-sm font-medium mb-2 block">活動可能時間</label>
+            <Select value={timeSlot} onValueChange={setTimeSlot}>
+              <SelectTrigger>
+                <SelectValue placeholder="すべて" />
+              </SelectTrigger>
+              {/* ★ 改善点: max-h-60 を追加して高さを制限し、スクロールを可能にする */}
+              <SelectContent className="max-h-60">
+                <SelectItem value="all">すべて</SelectItem>
+                {(timeSlots || []).map((ts) => (
+                  <SelectItem key={ts.id} value={ts.id}>
+                    {ts.display_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        
       </div>
 
       <div className="flex gap-2">

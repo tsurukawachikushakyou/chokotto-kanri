@@ -63,19 +63,21 @@ export default async function Dashboard() {
       return activityDate >= startOfWeek(today, { weekStartsOn: 1 }) && activityDate <= endOfWeek(today, { weekStartsOn: 1 });
   });
 
-  // CSS変数をコンポーネント内で定義
   const supporterColor = 'hsl(var(--supporter))';
   const userColor = 'hsl(var(--user))';
   const primaryColor = 'hsl(var(--primary))';
 
   return (
-    <div className="space-y-8">
+    // ★ 改善点: flex と flex-col を追加し、 order ユーティリティの土台を作る
+    <div className="flex flex-col space-y-8">
+      {/* ヘッダーは常に一番上 */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">ダッシュボード</h1>
         <p className="text-muted-foreground">システムの概要と今後の活動予定を確認できます</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ★ 改善点: デフォルト(スマホ)は2番目、lg以上(PC)で1番目 */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 order-2 lg:order-1">
         <Link href="/supporters">
           <Card className="transition-all hover:shadow-md" style={{ borderColor: `hsla(221.2, 83.2%, 53.3%, 0.2)`, backgroundColor: `hsla(221.2, 83.2%, 53.3%, 0.05)` }}>
             <CardHeader className="pb-2">
@@ -134,7 +136,8 @@ export default async function Dashboard() {
         </Link>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* ★ 改善点: デフォルト(スマホ)は1番目、lg以上(PC)で2番目 */}
+      <div className="grid gap-6 lg:grid-cols-2 order-1 lg:order-2">
         <Card>
           <CardHeader>
             <CardTitle>本日の活動予定</CardTitle>
@@ -155,7 +158,6 @@ export default async function Dashboard() {
                           <span className="text-muted-foreground mx-1">→</span>
                           <span>{activity.service_users.name}</span>
                         </p>
-                        {/* ★ 改善点: 時間をアイコン付きで表示 */}
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Clock className="h-3 w-3 mr-1" />
                           <span>{activity.time_slots.display_name}{activity.arbitrary_time_notes && ` (${activity.arbitrary_time_notes})`}</span>
@@ -191,7 +193,6 @@ export default async function Dashboard() {
                           <span className="text-muted-foreground mx-1">→</span>
                           <span>{activity.service_users.name}</span>
                         </p>
-                        {/* ★ 改善点: 時間をアイコン付きで表示 */}
                         <div className="flex items-center text-xs text-muted-foreground">
                           <Clock className="h-3 w-3 mr-1" />
                           <span>{activity.time_slots.display_name}{activity.arbitrary_time_notes && ` (${activity.arbitrary_time_notes})`}</span>
@@ -207,7 +208,8 @@ export default async function Dashboard() {
         </Card>
       </div>
 
-      <Card>
+      {/* ★ 改善点: デフォルト(スマホ)は3番目、lg以上(PC)で3番目 */}
+      <Card className="order-3 lg:order-3">
           <CardHeader>
               <CardTitle>今月の活動カレンダー</CardTitle>
               <CardDescription>今月の活動予定の概要をカレンダーで確認できます。</CardDescription>

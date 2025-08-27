@@ -24,7 +24,8 @@ export interface SearchParams {
   skills?: string
   time_slots?: string
   view?: string
-  month?: string // ★ 追加
+  month?: string
+  time_slot?: string
 }
 
 // 型安全なsearchParamsの解析関数
@@ -46,6 +47,7 @@ export function parseSearchParams(searchParams: Record<string, string | string[]
     skills: getString("skills"),
     time_slots: getString("time_slots"),
     view: getString("view"),
-    month: getString("month"), // ★ 追加
+    month: getString("month"),
+    time_slot: getString("time_slot"),
   }
 }

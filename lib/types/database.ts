@@ -57,6 +57,7 @@ export interface SupporterFilters {
   status?: string
   area?: string
   skill?: string
+  time_slot?: string // ★★★ この一行を追加しただけです ★★★
 }
 
 export interface ServiceUserFilters {

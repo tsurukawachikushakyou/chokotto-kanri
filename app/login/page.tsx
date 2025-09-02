@@ -1,65 +1,94 @@
-'use client';
+// -------------------- /app/login/page.tsx (完全版) --------------------
+// このコードをコピーして、/app/login/page.tsxファイルの中身と完全に置き換えてください。
 
-import { Suspense, useState, useEffect } from 'react'; // Suspense をインポート
-import { useRouter, useSearchParams } from 'next/navigation';
-import Cookies from 'js-cookie';
+'use client'
 
-// 実際のロジックを持つコンポーネントを切り出す
-function LoginForm() {
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const router = useRouter();
-  const searchParams = useSearchParams(); // このフックがSuspenseを必要とする
+import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client' // あなたの既存のヘルパー関数をインポート
 
-  // ページが読み込まれた時に、URLのクエリパラメータをチェックする
-  useEffect(() => {
-    if (searchParams.get('error') === '1') {
-      setError('パスワードが違うか、有効期限が切れました。');
-      // エラー表示後、URLからクエリを消してリロードしてもエラーが出ないようにする
-      const newUrl = window.location.pathname;
-      window.history.replaceState({}, '', newUrl);
-    }
-  }, [searchParams]);
+// ↓↓ shadcn/uiなどのコンポーネントライブラリを使っている場合は、
+//    これらのインポートパスが正しいか確認してください。
+//    もし使っていない場合は、これらを<divや<form>などの標準HTMLタグに置き換えてください。
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
 
-    if (password) {
-      Cookies.set('simple-auth-password', password, { expires: 1 });
-      router.push('/');
-    } else {
-      setError('パスワードを入力してください');
-    }
-  };
-
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '2rem', border: '1px solid #ccc', borderRadius: '8px' }}>
-        <h2>ログイン</h2>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="パスワード"
-          style={{ padding: '0.5rem' }}
-        />
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" style={{ padding: '0.5rem', cursor: 'pointer' }}>
-          入室する
-        </button>
-      </form>
-    </div>
-  );
-}
-
-// メインのページコンポーネント
 export default function LoginPage() {
-  // Suspenseでロジックコンポーネントを囲む
-  // fallbackは、LoginFormの準備ができるまでに表示する内容（今回は何も表示しない）
+  const supabase = createClient()
+
+  // Supabaseに登録したユーザーのメールアドレス（固定）
+  const TEAM_EMAIL = 'tsurukawa.chikushakyou@gmail.com' 
+  
+  // コンポーネントの状態管理
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  // ログインボタンが押されたときの処理
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault() // フォームのデフォルトの送信動作を防ぐ
+    setError(null) // 前のエラーメッセージをクリア
+    setLoading(true) // ローディング状態を開始
+
+    // Supabaseにメールとパスワードを送信して認証を試みる
+    const { error } = await supabase.auth.signInWithPassword({
+      email: TEAM_EMAIL,
+      password,
+    })
+
+    // 認証でエラーが発生した場合の処理
+    if (error) {
+      if (error.message === 'Invalid login credentials') {
+        setError('パスワードが正しくありません。')
+      } else {
+        // その他の予期せぬエラー
+        setError(`エラー: ${error.message}`)
+      }
+      setLoading(false) // ローディング状態を解除
+      return // 処理を中断
+    }
+
+    // ログインに成功した場合、ページをリロードしてホームページに遷移
+    // router.push('/') ではなく window.location.href を使うことで、
+    // セッション情報を確実に最新の状態に更新できる
+    window.location.href = '/'
+  }
+
+  // ページの見た目（JSX）
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <LoginForm />
-    </Suspense>
-  );
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">ログイン</CardTitle>
+          <CardDescription>
+            チームで共有しているパスワードを入力してください。
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="password">パスワード</Label>
+              <Input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading} // ローディング中は入力を無効化
+              />
+            </div>
+            {error && (
+              <p className="text-sm font-medium text-red-500">{error}</p>
+            )}
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? 'ログイン中...' : 'ログイン'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }
+// -------------------- ここまで --------------------

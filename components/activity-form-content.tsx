@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -13,6 +13,18 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { deleteActivity } from "@/app/activities/actions"
 
 interface ActivityFormContentProps {
   initialData?: {
@@ -24,7 +36,7 @@ interface ActivityFormContentProps {
     time_slot_id: string
     status_id: string
     notes: string | null
-    arbitrary_time_notes: string | null // 追加
+    arbitrary_time_notes: string | null
     supporters: { name: string }
     service_users: { name: string }
     skills: { name: string }
@@ -62,7 +74,7 @@ interface StatusOption {
 export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [supporters, setSupporters] = useState<SupporterOption[]>([])
   const [serviceUsers, setServiceUsers] = useState<ServiceUserOption[]>([])
   const [skills, setSkills] = useState<SkillOption[]>([])
@@ -86,7 +98,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
           time_slot_id: initialData.time_slot_id,
           status_id: initialData.status_id,
           notes: initialData.notes || "",
-          arbitrary_time_notes: initialData.arbitrary_time_notes || "", // 追加
+          arbitrary_time_notes: initialData.arbitrary_time_notes || "",
         }
       : {},
   })
@@ -107,7 +119,6 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
         )
 
         if (supportersResult.data) {
-          // 型安全な処理: status が null の場合は 'N/A' に変換
           const supportersWithStatus = supportersResult.data.map((supporter) => ({
             id: supporter.id,
             name: supporter.name,
@@ -120,7 +131,6 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
         if (timeSlotsResult.data) setTimeSlots(timeSlotsResult.data as TimeSlotOption[])
         if (statusesResult.data) setStatuses(statusesResult.data as StatusOption[])
 
-        // URLパラメータからサポーターIDを取得して設定
         const supporterId = searchParams.get("supporter")
         if (supporterId) {
           setValue("supporter_id", supporterId)
@@ -134,16 +144,32 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
     fetchData()
   }, [searchParams, setValue])
 
-  const onSubmit = async (data: ActivityFormData) => {
-    setIsLoading(true)
-    const supabase = createClient()
+  const onSubmit = (data: ActivityFormData) => {
+    startTransition(async () => {
+      const supabase = createClient()
 
-    try {
-      if (initialData) {
-        // 更新処理
-        const { error } = await supabase
-          .from("activities")
-          .update({
+      try {
+        if (initialData) {
+          const { error } = await supabase
+            .from("activities")
+            .update({
+              supporter_id: data.supporter_id,
+              service_user_id: data.service_user_id,
+              skill_id: data.skill_id,
+              activity_date: data.activity_date,
+              time_slot_id: data.time_slot_id,
+              status_id: data.status_id,
+              notes: data.notes || null,
+              arbitrary_time_notes: data.arbitrary_time_notes || null,
+            })
+            .eq("id", initialData.id)
+
+          if (error) throw error
+
+          toast.success("活動情報を更新しました")
+          router.push(`/activities/${initialData.id}`)
+        } else {
+          const { error } = await supabase.from("activities").insert({
             supporter_id: data.supporter_id,
             service_user_id: data.service_user_id,
             skill_id: data.skill_id,
@@ -151,38 +177,29 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
             time_slot_id: data.time_slot_id,
             status_id: data.status_id,
             notes: data.notes || null,
-            arbitrary_time_notes: data.arbitrary_time_notes || null, // 追加
+            arbitrary_time_notes: data.arbitrary_time_notes || null,
           })
-          .eq("id", initialData.id)
 
-        if (error) throw error
+          if (error) throw error
 
-        toast.success("活動情報を更新しました")
-        router.push(`/activities/${initialData.id}`)
-      } else {
-        // 新規作成処理
-        const { error } = await supabase.from("activities").insert({
-          supporter_id: data.supporter_id,
-          service_user_id: data.service_user_id,
-          skill_id: data.skill_id,
-          activity_date: data.activity_date,
-          time_slot_id: data.time_slot_id,
-          status_id: data.status_id,
-          notes: data.notes || null,
-          arbitrary_time_notes: data.arbitrary_time_notes || null, // 追加
-        })
-
-        if (error) throw error
-
-        toast.success("活動を登録しました")
-        router.push("/activities")
+          toast.success("活動を登録しました")
+          router.push("/activities")
+        }
+      } catch (error) {
+        console.error("保存に失敗しました:", error)
+        toast.error("保存に失敗しました")
       }
-    } catch (error) {
-      console.error("保存に失敗しました:", error)
-      toast.error("保存に失敗しました")
-    } finally {
-      setIsLoading(false)
-    }
+    })
+  }
+
+  const handleDelete = () => {
+    if (!initialData) return
+    startTransition(async () => {
+      const result = await deleteActivity(initialData.id)
+      if (result && result.success === false) {
+        toast.error(`削除に失敗しました: ${result.message}`)
+      }
+    })
   }
 
   return (
@@ -194,7 +211,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="supporter_id">サポーター * ({supporters.length}件)</Label>
-            <Select value={watch("supporter_id")} onValueChange={(value) => setValue("supporter_id", value)}>
+            <Select value={watch("supporter_id")} onValueChange={(value) => setValue("supporter_id", value)} disabled={isPending}>
               <SelectTrigger>
                 <SelectValue placeholder="サポーターを選択してください" />
               </SelectTrigger>
@@ -216,7 +233,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
 
           <div>
             <Label htmlFor="service_user_id">利用者 * ({serviceUsers.length}件)</Label>
-            <Select value={watch("service_user_id")} onValueChange={(value) => setValue("service_user_id", value)}>
+            <Select value={watch("service_user_id")} onValueChange={(value) => setValue("service_user_id", value)} disabled={isPending}>
               <SelectTrigger>
                 <SelectValue placeholder="利用者を選択してください" />
               </SelectTrigger>
@@ -233,7 +250,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
 
           <div>
             <Label htmlFor="skill_id">サポート内容 *</Label>
-            <Select value={watch("skill_id")} onValueChange={(value) => setValue("skill_id", value)}>
+            <Select value={watch("skill_id")} onValueChange={(value) => setValue("skill_id", value)} disabled={isPending}>
               <SelectTrigger>
                 <SelectValue placeholder="サポート内容を選択してください" />
               </SelectTrigger>
@@ -250,13 +267,13 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
 
           <div>
             <Label htmlFor="activity_date">活動日 *</Label>
-            <Input id="activity_date" type="date" {...register("activity_date")} />
+            <Input id="activity_date" type="date" {...register("activity_date")} disabled={isPending} />
             {errors.activity_date && <p className="text-sm text-red-600 mt-1">{errors.activity_date.message}</p>}
           </div>
 
           <div>
             <Label htmlFor="time_slot_id">時間帯 *</Label>
-            <Select value={watch("time_slot_id")} onValueChange={(value) => setValue("time_slot_id", value)}>
+            <Select value={watch("time_slot_id")} onValueChange={(value) => setValue("time_slot_id", value)} disabled={isPending}>
               <SelectTrigger>
                 <SelectValue placeholder="時間帯を選択してください" />
               </SelectTrigger>
@@ -272,11 +289,12 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
           </div>
 
           <div>
-            <Label htmlFor="arbitrary_time_notes">任意の時間 (例: 14:30開始)</Label> {/* 追加 */}
+            <Label htmlFor="arbitrary_time_notes">任意の時間 (例: 14:30開始)</Label>
             <Input
               id="arbitrary_time_notes"
               {...register("arbitrary_time_notes")}
               placeholder="例: 14:30開始、午前中、夕方"
+              disabled={isPending}
             />
             {errors.arbitrary_time_notes && (
               <p className="text-sm text-red-600 mt-1">{errors.arbitrary_time_notes.message}</p>
@@ -285,7 +303,7 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
 
           <div>
             <Label htmlFor="status_id">ステータス *</Label>
-            <Select value={watch("status_id")} onValueChange={(value) => setValue("status_id", value)}>
+            <Select value={watch("status_id")} onValueChange={(value) => setValue("status_id", value)} disabled={isPending}>
               <SelectTrigger>
                 <SelectValue placeholder="ステータスを選択してください" />
               </SelectTrigger>
@@ -307,19 +325,54 @@ export function ActivityFormContent({ initialData }: ActivityFormContentProps) {
               {...register("notes")}
               placeholder="活動に関する備考があれば記入してください"
               rows={3}
+              disabled={isPending}
             />
             {errors.notes && <p className="text-sm text-red-600 mt-1">{errors.notes.message}</p>}
           </div>
         </CardContent>
       </Card>
 
-      <div className="flex gap-4">
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? "保存中..." : initialData ? "更新" : "登録"}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => router.back()}>
-          キャンセル
-        </Button>
+      <div className="flex items-center justify-between gap-x-4 pt-4 border-t">
+        {/* 左側に配置する削除ボタン */}
+        <div>
+          {initialData && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button type="button" variant="destructive" disabled={isPending}>
+                  この活動を削除する
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>本当に削除しますか？</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    この活動記録を完全に削除します。この操作は元に戻すことはできません。
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={isPending}>キャンセル</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isPending}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isPending ? '削除中...' : 'はい、削除します'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
+
+        {/* 右側に配置するボタン群 */}
+        <div className="flex items-center gap-x-4">
+          <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>
+            キャンセル
+          </Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "保存中..." : initialData ? "更新する" : "登録する"}
+          </Button>
+        </div>
       </div>
     </form>
   )

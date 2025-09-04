@@ -1,3 +1,6 @@
+// -------------------- app/activities/[id]/page.tsx (完全版) --------------------
+// このコードをコピーして、ファイルの中身と完全に置き換えてください。
+
 import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -17,10 +20,15 @@ import {
   FileText,
   Phone,
   Mail,
+
 } from 'lucide-react'
 import { formatDateWithWeekday, formatDateTime } from '@/lib/utils/date-utils'
 import type { PagePropsWithId } from '@/lib/types/page-props'
+// 変更点2: 新しく作成する削除ボタンのUIコンポーネントをインポートします
+import { DeleteActivityButton } from '@/components/delete-activity-button'
 
+
+// interface定義は、あなたの既存コードのままです
 interface ActivityDetail {
   id: string
   activity_date: string
@@ -56,6 +64,7 @@ interface ActivityDetail {
   }
 }
 
+// getActivity関数も、あなたの既存コードのままです
 async function getActivity(id: string): Promise<ActivityDetail | null> {
   const supabase = await createClient()
 
@@ -83,6 +92,7 @@ async function getActivity(id: string): Promise<ActivityDetail | null> {
   }
 }
 
+// statusColorsオブジェクトも、あなたの既存コードのままです
 const statusColors = {
   予定: 'bg-blue-100 text-blue-800 border-blue-200',
   完了: 'bg-green-100 text-green-800 border-green-200',
@@ -90,7 +100,7 @@ const statusColors = {
   仮予約: 'bg-yellow-100 text-yellow-800 border-yellow-200',
 } as const
 
-// DetailItemコンポーネント（レスポンシブ対応済み）
+// DetailItemコンポーネントも、あなたの既存コードのままです
 function DetailItem({ icon: Icon, label, children }: { icon: React.ElementType; label: string; children: React.ReactNode }) {
   if (!children) {
     return null
@@ -106,6 +116,7 @@ function DetailItem({ icon: Icon, label, children }: { icon: React.ElementType; 
   )
 }
 
+// ここからがページの本体です
 export default async function ActivityDetailPage(props: PagePropsWithId) {
   const params = await props.params
   const activity = await getActivity(params.id)
@@ -124,7 +135,6 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
               一覧に戻る
             </Link>
           </Button>
-          {/* ★ 修正点: h1の文字サイズをレスポンシブ化 */}
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">活動詳細</h1>
         </div>
         <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
@@ -142,6 +152,10 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
               編集
             </Link>
           </Button>
+
+          {/* 変更点3: 編集ボタンの隣に、新しく作成する削除ボタンコンポーネントを配置します */}
+          <DeleteActivityButton activityId={activity.id} />
+          
         </div>
       </div>
 
@@ -158,7 +172,6 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
                 <User className="h-8 w-8 text-muted-foreground" />
                 <div>
                   <div className="text-sm text-muted-foreground">サポーター</div>
-                  {/* ★ 修正点: Linkの文字サイズをレスポンシブ化 */}
                   <Link href={`/supporters/${activity.supporters.id}`} className="font-semibold text-base sm:text-lg hover:underline">
                     {activity.supporters.name}
                   </Link>
@@ -169,7 +182,6 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
                 <Users className="h-8 w-8 text-muted-foreground" />
                 <div>
                   <div className="text-sm text-muted-foreground">利用者</div>
-                  {/* ★ 修正点: Linkの文字サイズをレスポンシブ化 */}
                   <Link
                     href={`/service-users/${activity.service_users.id}`}
                     className="font-semibold text-base sm:text-lg hover:underline"
@@ -246,7 +258,7 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
                 <div className="space-y-4">
                   <DetailItem icon={Phone} label="電話番号">
                     {activity.service_users.phone}
-                  </DetailItem>
+                  </DetailItem> 
                   <DetailItem icon={Mail} label="メール">
                     {activity.service_users.email}
                   </DetailItem>
@@ -265,3 +277,4 @@ export default async function ActivityDetailPage(props: PagePropsWithId) {
     </div>
   )
 }
+// -------------------- ここまで --------------------
